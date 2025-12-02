@@ -1,0 +1,47 @@
+.paper {
+  padding: 30px;
+  width: 400px;
+  margin: 50px auto;
+}
+
+.updateButtonsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.transactionButtonsContainer {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.receiptsSection {
+  margin-top: 20px;
+}
+
+.receiptsContainer {
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.receiptsTitle {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.receiptItem {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.receiptTitle {
+  font-weight: bold;
+}
+
+.errorMessage {
+  margin-top: 10px;
+}
