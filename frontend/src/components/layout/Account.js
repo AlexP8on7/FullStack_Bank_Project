@@ -175,22 +175,51 @@ export default function Account() {
       return;
     }
 
-    try {
-      const response = await fetch(`http://localhost:8080/customer/deleteAcc/${customerData.id}`, {
-        method: 'DELETE',
-      });
+    // Add confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone.'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
 
+    try {
+      // Find the correct customer ID by matching username
+      const checkResponse = await fetch('http://localhost:8080/customers');
+      if (!checkResponse.ok) {
+        throw new Error('Failed to verify customer data');
+      }
+      
+      const allCustomers = await checkResponse.json();
+      const foundCustomer = allCustomers.find(c => c.username === customerData.username);
+      
+      if (!foundCustomer) {
+        throw new Error('Customer not found in database');
+      }
+      
+
+      
+      const response = await fetch(`http://localhost:8080/customer/deleteAcc/${foundCustomer.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       if (!response.ok) {
-        throw new Error('Account deletion failed.');
+        const errorData = await response.json().catch(() => ({ detail: 'Account deletion failed' }));
+        throw new Error(errorData.detail || 'Account deletion failed');
       }
 
       // Clear customer data and navigate to login
       localStorage.removeItem('customerData');
       setCustomerData(null);
       setErrorMessage('');
+      alert('Account deleted successfully');
       navigate('/login');
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(`Failed to delete account: ${error.message}`);
     }
   };
 
@@ -351,11 +380,16 @@ export default function Account() {
               </Box>
             )}
           </Collapse>
-        </Box>{/* Delete Account Button */}
-<Button
-          text1="Delete Account"
-          onClickHandler={handleDeleteAccount}
-        />
+        </Box>
+        
+        {/* Delete Account Button */}
+        <Box style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #e0e0e0' }}>
+          <Button
+            text1="Delete Account"
+            onClickHandler={handleDeleteAccount}
+            style={{ backgroundColor: '#dc3545', color: 'white' }}
+          />
+        </Box>
 
         {/* Log Out Button */}
         <Button
