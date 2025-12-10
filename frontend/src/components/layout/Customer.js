@@ -5,9 +5,10 @@ import TextField from '@mui/material/TextField';
 import { Container, Paper, Typography } from '@mui/material';
 import { PersonAdd } from '@mui/icons-material';
 import Button from '../generic/Button';
+import { useNavigate } from 'react-router-dom';
 
 export default function Customer() {
-
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [phonenm, setPhone] = useState('');
@@ -15,18 +16,46 @@ export default function Customer() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleClick=(e)=>{
-    e.preventDefault()
-    const customer={name, username, password, age, email, address,phonenm}
-    console.log(customer)
-    fetch("http://localhost:8080/customer/createCustomer",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(customer)
-  }).then(()=>{
-    console.log("New Customer Created")
-  }) }
+  const handleClick = async (e) => {
+    e.preventDefault();
+    
+    if (!name || !username || !password || !age || !email || !phonenm || !address) {
+      setErrorMessage('Please fill in all fields');
+      return;
+    }
+    
+    const customer = { name, username, password, age, email, address, phonenm };
+    
+    try {
+      const createResponse = await fetch("http://localhost:8080/customer/createCustomer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customer)
+      });
+      
+      if (!createResponse.ok) {
+        throw new Error('Account creation failed');
+      }
+      
+      // Auto-login after successful creation
+      const loginResponse = await fetch(`http://localhost:8080/customer/login/${username}/${password}`);
+      
+      if (!loginResponse.ok) {
+        throw new Error('Auto-login failed');
+      }
+      
+      const loginData = await loginResponse.json();
+      const customerData = loginData[0];
+      
+      localStorage.setItem('customerData', JSON.stringify(customerData));
+      navigate('/account');
+      
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  };
   
   return (
     <Box
@@ -105,14 +134,13 @@ export default function Customer() {
               onChange={(e) => setAddress(e.target.value)}
             />
 <Button text1="Create Account" onClickHandler={handleClick} />
-
+            
+            {errorMessage && (
+              <Typography color="error" variant="body2" style={{ marginTop: '16px', textAlign: 'center' }}>
+                {errorMessage}
+              </Typography>
+            )}
           </Box>
-          <p>
-           
-          </p>
-          <p>
-       
-          </p>
         </Paper>
       </Container>
     </Box>
